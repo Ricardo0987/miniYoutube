@@ -1,0 +1,14 @@
+{
+  "window.zoomLevel": 0.5,
+
+  "workbench.colorCustomizations": {
+    "scrollbarSlider.background": "#9e27ca",
+    "scrollbarSlider.hoverBackground": "#233240"
+  },
+  "editor.scrollbar.verticalScrollbarSize": 10,
+  "editor.scrollbar.horizontal": "visible",
+  "editor.scrollbar.horizontalScrollbarSize": 15,
+  "workbench.editor.tabSizing": "fit",
+
+  "prettier.printWidth": 150
+}
