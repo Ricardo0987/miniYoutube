@@ -23,6 +23,7 @@ const useStyles = makeStyles({
   container: {
     display: "flex",
     flexWrap: "wrap",
+    justifyContent: "center",
   },
   card: {
     minWidth: 275,
@@ -78,8 +79,8 @@ export default function VideoList() {
       title: "Add video",
       html:
         '<input id="swal-input1" class="swal2-input" placeholder="name of video"/>' +
-        '<input id="swal-input2" class="swal2-input" placeholder="tags of video"/>' +
-        '<input id="swal-input3" class="swal2-input" placeholder="file"/>',
+        '<input id="swal-input2" class="swal2-input" placeholder="tags separate by comma"/>' +
+        '<input id="swal-input3" type="file"  placeholder="file"/>',
       focusConfirm: false,
       showCancelButton: true,
       preConfirm: () => {
@@ -105,7 +106,6 @@ export default function VideoList() {
   };
 
   const toggleLike = async (video) => {
-    setPending(true);
     await axios.post(CONFIG.HOST + "/like/", { idUser: user, idVideo: video._id }).then((response) => {
       getVideos();
     });

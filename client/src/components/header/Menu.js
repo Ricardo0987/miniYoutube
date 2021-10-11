@@ -7,6 +7,7 @@ import Button from "@material-ui/core/Button";
 import { makeStyles } from "@material-ui/core/styles";
 import { useHistory } from "react-router-dom";
 import { reactLocalStorage } from "reactjs-localstorage";
+import Avatar from '@material-ui/core/Avatar';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -36,9 +37,10 @@ export default function Menu() {
           <Typography variant="h6" className={classes.title}>
             Videos
           </Typography>
-          <Button color="inherit" onClick={goSigIn}>
+          {/* <Button color="inherit" onClick={goSigIn}>
             LogOut
-          </Button>
+          </Button> */}
+          <Avatar>RO</Avatar>
         </Toolbar>
       </AppBar>
     </div>
