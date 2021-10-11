@@ -17,6 +17,7 @@ import Input from "@material-ui/core/Input";
 import InputLabel from "@material-ui/core/InputLabel";
 import InputAdornment from "@material-ui/core/InputAdornment";
 import SearchIcon from "@material-ui/icons/Search";
+import Spinner from "../misc/Spinner";
 
 const useStyles = makeStyles({
   container: {
@@ -56,11 +57,14 @@ export default function VideoList() {
   const classes = useStyles();
 
   const [videos, setVideos] = useState([]);
+  const [pending, setPending] = useState(true);
+
   const [user, setuser] = useState("61631465a13ef518b1057995");
 
   const getVideos = async () => {
     await axios.get(CONFIG.HOST + "/videos/").then((response) => {
       setVideos(response.data);
+      setPending(false);
     });
   };
 
@@ -79,12 +83,15 @@ export default function VideoList() {
       focusConfirm: false,
       showCancelButton: true,
       preConfirm: () => {
+        setPending(true);
+
         const video = {
           name: document.getElementById("swal-input1").value,
           tags: document.getElementById("swal-input2").value.split(","),
           file: document.getElementById("swal-input3").value,
           idUser: user,
         };
+
         return video;
       },
     }).then((result) => {
@@ -98,6 +105,7 @@ export default function VideoList() {
   };
 
   const toggleLike = async (video) => {
+    setPending(true);
     await axios.post(CONFIG.HOST + "/like/", { idUser: user, idVideo: video._id }).then((response) => {
       getVideos();
     });
@@ -110,6 +118,8 @@ export default function VideoList() {
 
   return (
     <div>
+      {pending && <Spinner />}
+
       <div className={classes.top}>
         <form noValidate autoComplete="off">
           <Button variant="contained" color="secondary" onClick={addvideo}>
