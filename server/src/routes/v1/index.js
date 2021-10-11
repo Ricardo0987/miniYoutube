@@ -7,6 +7,7 @@ const createRoutesV1 = (app) => {
   app.get("/api/v1/users", usersController.getUsers);
 
   app.get("/api/v1/videos/", videoController.getVideos);
+  app.post("/api/v1/videos/search", videoController.searchVideos);
   app.post("/api/v1/video/", videoController.createVideo);
 
   app.post("/api/v1/like/", likeController.toggleLike);

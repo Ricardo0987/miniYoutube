@@ -51,6 +51,7 @@ const useStyles = makeStyles({
     margin: 4,
     padding: "10px",
     borderRadius: "20px",
+    minWidth: "95vw",
   },
 });
 
@@ -88,7 +89,7 @@ export default function VideoList() {
 
         const video = {
           name: document.getElementById("swal-input1").value,
-          tags: document.getElementById("swal-input2").value.split(","),
+          tags: document.getElementById("swal-input2").value.replaceAll(" ","").split(","),
           file: document.getElementById("swal-input3").value,
           idUser: user,
         };
@@ -116,6 +117,18 @@ export default function VideoList() {
     setuser(value);
   };
 
+  const handleChangeSearch = (e) => {
+    const { value } = e.target;
+    if (value.length > 0) {
+      axios.post(CONFIG.HOST + "/videos/search", { strSearch: value }).then((response) => {
+        setVideos(response.data);
+        setPending(false);
+      });
+    } else {
+      getVideos();
+    }
+  };
+
   return (
     <div>
       {pending && <Spinner />}
@@ -138,6 +151,7 @@ export default function VideoList() {
         <FormControl className={classes.search}>
           <InputLabel htmlFor="input-with-icon-adornment">Search Video</InputLabel>
           <Input
+            onChange={handleChangeSearch}
             startAdornment={
               <InputAdornment position="end">
                 <SearchIcon />

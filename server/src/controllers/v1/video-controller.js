@@ -29,7 +29,23 @@ const getVideos = async (req, res) => {
   res.send(videosAndLikes);
 };
 
+const searchVideos = async (req, res) => {
+  const { strSearch } = req.body;
+  const videos = await Video.find({ $or: [{ name: strSearch }, {tags:{ $in: strSearch }}] });
+  const likes = await Like.find();
+  const videosAndLikes = videos.map((video) => {
+    let likeCount = 0;
+    likes.forEach((like) => {
+      if (like.idVideo.toString() === video.id) {
+        likeCount++;
+      }
+    });
+    return { ...video._doc, likes: likeCount };
+  });
+  res.send(videosAndLikes);
+};
 module.exports = {
   createVideo,
   getVideos,
+  searchVideos,
 };
