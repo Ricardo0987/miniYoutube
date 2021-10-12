@@ -51,7 +51,6 @@ const useStyles = makeStyles({
     margin: 4,
     padding: "10px",
     borderRadius: "20px",
-    minWidth: "95vw",
   },
 });
 
@@ -59,6 +58,7 @@ export default function VideoList() {
   const classes = useStyles();
 
   const [videos, setVideos] = useState([]);
+  const [videoSearch, setVideoSearch] = useState();
   const [pending, setPending] = useState(true);
 
   const [user, setuser] = useState("61631465a13ef518b1057995");
@@ -69,9 +69,15 @@ export default function VideoList() {
       setPending(false);
     });
   };
+  const getUSers = async () => {
+    await axios.get(CONFIG.HOST + "/users/").then((response) => {
+      console.log("users", response.data);
+    });
+  };
 
   useEffect(() => {
     getVideos();
+    getUSers();
   }, []);
 
   const addvideo = (e) => {
@@ -89,7 +95,7 @@ export default function VideoList() {
 
         const video = {
           name: document.getElementById("swal-input1").value,
-          tags: document.getElementById("swal-input2").value.replaceAll(" ","").split(","),
+          tags: document.getElementById("swal-input2").value.replaceAll(" ", "").split(","),
           file: document.getElementById("swal-input3").value,
           idUser: user,
         };
@@ -119,14 +125,19 @@ export default function VideoList() {
 
   const handleChangeSearch = (e) => {
     const { value } = e.target;
-    if (value.length > 0) {
-      axios.post(CONFIG.HOST + "/videos/search", { strSearch: value }).then((response) => {
-        setVideos(response.data);
-        setPending(false);
-      });
-    } else {
+    setVideoSearch(value);
+    if (value.length === 0) {
       getVideos();
     }
+  };
+
+  const videoSearchAction = (e) => {
+    setPending(true);
+
+    axios.post(CONFIG.HOST + "/videos/search", { strSearch: videoSearch }).then((response) => {
+      setVideos(response.data);
+      setPending(false);
+    });
   };
 
   return (
@@ -139,22 +150,16 @@ export default function VideoList() {
             Add Video
           </Button>
         </form>
-        <TextField
-          size="small"
-          variant="filled"
-          label="UserId"
-          placeholder="idUser"
-          name="idUser"
-          value="61630453f19c950c42146836" //FIXME: quitar
-          onChange={handleChangeUser}
-        />
+        <TextField size="small" variant="filled" label="UserId" placeholder="idUser" name="idUser" onChange={handleChangeUser} />
         <FormControl className={classes.search}>
           <InputLabel htmlFor="input-with-icon-adornment">Search Video</InputLabel>
           <Input
             onChange={handleChangeSearch}
             startAdornment={
               <InputAdornment position="end">
-                <SearchIcon />
+                <Button color="primary" onClick={videoSearchAction}>
+                  <SearchIcon />
+                </Button>
               </InputAdornment>
             }
           />
