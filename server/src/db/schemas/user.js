@@ -7,10 +7,6 @@ const UserSchema = Schema({
     type: String,
     required: true,
   },
-  pass: {
-    type: String,
-    required: true,
-  },
 });
 
 module.exports = model("User", UserSchema);

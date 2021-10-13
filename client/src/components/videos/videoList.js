@@ -6,18 +6,20 @@ import { makeStyles } from "@material-ui/core/styles";
 import { CONFIG } from "../../config";
 import axios from "axios";
 import Chip from "@material-ui/core/Chip";
-import Menu from "../header/Menu";
 import Badge from "@material-ui/core/Badge";
 import ThumbUpAltIcon from "@material-ui/icons/ThumbUpAlt";
 import Swal from "sweetalert2";
 import Button from "@material-ui/core/Button";
-import TextField from "@material-ui/core/TextField";
 import FormControl from "@material-ui/core/FormControl";
 import Input from "@material-ui/core/Input";
-import InputLabel from "@material-ui/core/InputLabel";
 import InputAdornment from "@material-ui/core/InputAdornment";
 import SearchIcon from "@material-ui/icons/Search";
 import Spinner from "../misc/Spinner";
+import { reactLocalStorage } from "reactjs-localstorage";
+import AppBar from "@material-ui/core/AppBar";
+import Toolbar from "@material-ui/core/Toolbar";
+import Avatar from "@material-ui/core/Avatar";
+import ExitToAppIcon from "@material-ui/icons/ExitToApp";
 
 const useStyles = makeStyles({
   container: {
@@ -47,10 +49,13 @@ const useStyles = makeStyles({
     display: "flex",
     alignItems: "center",
     justifyContent: "space-around",
-    backgroundColor: "#b5b5b5",
     margin: 4,
     padding: "10px",
     borderRadius: "20px",
+    width: "95%",
+  },
+  titleMenu: {
+    flexGrow: 1,
   },
 });
 
@@ -60,8 +65,7 @@ export default function VideoList() {
   const [videos, setVideos] = useState([]);
   const [videoSearch, setVideoSearch] = useState();
   const [pending, setPending] = useState(true);
-
-  const [user, setuser] = useState("61631465a13ef518b1057995");
+  const [user, setuser] = useState();
 
   const getVideos = async () => {
     await axios.get(CONFIG.HOST + "/videos/").then((response) => {
@@ -70,15 +74,54 @@ export default function VideoList() {
     });
   };
   const getUSers = async () => {
-    await axios.get(CONFIG.HOST + "/users/").then((response) => {
-      console.log("users", response.data);
-    });
+    await axios.get(CONFIG.HOST + "/users/");
   };
 
   useEffect(() => {
     getVideos();
     getUSers();
+    if (reactLocalStorage.get("user") && reactLocalStorage.get("idUser")) {
+      setuser({ userName: reactLocalStorage.get("user"), idUser: reactLocalStorage.get("idUser") });
+    }
   }, []);
+
+  useEffect(() => {
+    newUser();
+  });
+
+  const newUser = () => {
+    if (!reactLocalStorage.get("user")) {
+      Swal.fire({
+        title: "Identify",
+        html: '<input id="swal-input1" class="swal2-input" placeholder="nickname"/>',
+        focusConfirm: false,
+        allowOutsideClick: false,
+        preConfirm: () => {
+          let name = document.getElementById("swal-input1").value;
+          if (!name) {
+            Swal.showValidationMessage("input missing");
+          }
+
+          return { userName: name };
+        },
+      }).then((result) => {
+        if (result.isConfirmed) {
+          axios.post(CONFIG.HOST + "/user/", result.value).then((response) => {
+            const { userName, idUser } = response.data;
+            reactLocalStorage.set("user", userName);
+            reactLocalStorage.set("idUser", idUser);
+            setuser({ userName: userName, idUser: idUser });
+            getVideos();
+          });
+        }
+      });
+    }
+  };
+  const logOut = () => {
+    reactLocalStorage.remove("user");
+    reactLocalStorage.remove("idUser");
+    setuser();
+  };
 
   const addvideo = (e) => {
     e.preventDefault();
@@ -91,21 +134,22 @@ export default function VideoList() {
       focusConfirm: false,
       showCancelButton: true,
       preConfirm: () => {
-        setPending(true);
-
         const video = {
           name: document.getElementById("swal-input1").value,
           tags: document.getElementById("swal-input2").value.replaceAll(" ", "").split(","),
           file: document.getElementById("swal-input3").value,
-          idUser: user,
+          idUser: user.idUser,
         };
-
-        return video;
+        if (!video.name || !video.tags || !video.file) {
+          Swal.showValidationMessage("input missing");
+        } else {
+          return video;
+        }
       },
     }).then((result) => {
+      setPending(true);
       if (result.isConfirmed) {
         axios.post(CONFIG.HOST + "/video/", result.value).then((response) => {
-          console.log(response);
           getVideos();
         });
       }
@@ -113,14 +157,9 @@ export default function VideoList() {
   };
 
   const toggleLike = async (video) => {
-    await axios.post(CONFIG.HOST + "/like/", { idUser: user, idVideo: video._id }).then((response) => {
+    await axios.post(CONFIG.HOST + "/like/", { idUser: user.idUser, idVideo: video._id }).then((response) => {
       getVideos();
     });
-  };
-
-  const handleChangeUser = (e) => {
-    const { value } = e.target;
-    setuser(value);
   };
 
   const handleChangeSearch = (e) => {
@@ -143,40 +182,48 @@ export default function VideoList() {
   return (
     <div>
       {pending && <Spinner />}
+      <AppBar position="fixed">
+        <Toolbar>
+          <div className={classes.top}>
+            <form noValidate autoComplete="off">
+              <Button variant="contained" color="secondary" onClick={addvideo}>
+                Add Video
+              </Button>
+            </form>
+            <FormControl className={classes.search}>
+              <Input
+                placeholder="Search Video"
+                onChange={handleChangeSearch}
+                startAdornment={
+                  <InputAdornment position="end">
+                    <Button color="default" onClick={videoSearchAction}>
+                      <SearchIcon />
+                    </Button>
+                  </InputAdornment>
+                }
+              />
+            </FormControl>
+          </div>
+          {user && (
+            <Button color="inherit" onClick={logOut}>
+              <Avatar>{user.userName.substr(0, 2)}</Avatar>
+              LogOut <ExitToAppIcon />
+            </Button>
+          )}
+        </Toolbar>
+      </AppBar>
 
-      <div className={classes.top}>
-        <form noValidate autoComplete="off">
-          <Button variant="contained" color="secondary" onClick={addvideo}>
-            Add Video
-          </Button>
-        </form>
-        <TextField size="small" variant="filled" label="UserId" placeholder="idUser" name="idUser" onChange={handleChangeUser} />
-        <FormControl className={classes.search}>
-          <InputLabel htmlFor="input-with-icon-adornment">Search Video</InputLabel>
-          <Input
-            onChange={handleChangeSearch}
-            startAdornment={
-              <InputAdornment position="end">
-                <Button color="primary" onClick={videoSearchAction}>
-                  <SearchIcon />
-                </Button>
-              </InputAdornment>
-            }
-          />
-        </FormControl>
-      </div>
       <div className={classes.container}>
-        <Menu />
-        {videos.map((video) => (
-          <Card key={video.id} className={classes.card}>
+        {videos.map((video, index) => (
+          <Card key={index} className={classes.card}>
             <div className={classes.details}>
               <CardContent className={classes.content}>
                 <Typography component="h2" variant="h6" className={classes.title}>
                   {video.name}
                 </Typography>
                 Tags:
-                {video.tags.map((tag) => (
-                  <Chip label={tag} color="primary" className={classes.chips} />
+                {video.tags.map((tag, index) => (
+                  <Chip key={index} label={tag} color="primary" className={classes.chips} />
                 ))}
                 <Typography component="h2" variant="h6" className={classes.like}>
                   <Badge color="secondary" badgeContent={video.likes} showZero>

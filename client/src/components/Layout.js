@@ -19,7 +19,7 @@ const Layout = () => {
       <Container>
         <Grid container className={classes.container}>
           <BrowserRouter>
-            <Route exact path="/videos" component={VideoList} />
+            <Route path="/" component={VideoList} />
           </BrowserRouter>
         </Grid>
       </Container>
