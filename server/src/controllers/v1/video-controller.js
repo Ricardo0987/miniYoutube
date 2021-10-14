@@ -4,11 +4,11 @@ const Video = require("../../db/schemas/video");
 const Like = require("../../db/schemas/like");
 
 const createVideo = (req, res) => {
-  const { name, tags, file, idUser } = req.body;
+  const { name, tags, idUser } = req.body;
   const video = new Video();
   video.name = name;
-  video.tags = tags;
-  video.file = file;
+  video.tags = tags.replace(/\s+/g, "").split(",");
+  video.file = req.file.filename;
   video.idUser = idUser;
   video.save();
   res.send(req.body);
@@ -31,7 +31,7 @@ const getVideos = async (req, res) => {
 
 const searchVideos = async (req, res) => {
   const { strSearch } = req.body;
-  const videos = await Video.find({ $or: [{ name: strSearch }, {tags:{ $in: strSearch }}] });
+  const videos = await Video.find({ $or: [{ name: strSearch }, { tags: { $in: strSearch } }] });
   const likes = await Like.find();
   const videosAndLikes = videos.map((video) => {
     let likeCount = 0;
