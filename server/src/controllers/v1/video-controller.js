@@ -31,7 +31,7 @@ const getVideos = async (req, res) => {
 
 const searchVideos = async (req, res) => {
   const { strSearch } = req.body;
-  const videos = await Video.find({ $or: [{ name: strSearch }, { tags: { $in: strSearch } }] });
+  const videos = await Video.find({ $or: [{ name: new RegExp(strSearch, "gi") }, { tags: { $in: new RegExp(strSearch, "gi") } }] });
   const likes = await Like.find();
   const videosAndLikes = videos.map((video) => {
     let likeCount = 0;

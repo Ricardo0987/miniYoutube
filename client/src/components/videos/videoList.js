@@ -57,6 +57,9 @@ const useStyles = makeStyles({
   titleMenu: {
     flexGrow: 1,
   },
+  search: {
+    backgroundColor: "#ccc",
+  },
 });
 
 export default function VideoList() {
@@ -207,6 +210,11 @@ export default function VideoList() {
               <Input
                 placeholder="Search Video"
                 onChange={handleChangeSearch}
+                onKeyPress={(event) => {
+                  if (event.key === "Enter") {
+                    videoSearchAction();
+                  }
+                }}
                 startAdornment={
                   <InputAdornment position="end">
                     <Button color="default" onClick={videoSearchAction}>
